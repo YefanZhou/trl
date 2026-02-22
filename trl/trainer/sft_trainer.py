@@ -998,10 +998,12 @@ class SFTTrainer(BaseTrainer):
                         map_kwargs["desc"] = f"Adding EOS to {dataset_name} dataset"
 
                     def add_eos(example, eos_token):
+                        #print('eos_token', eos_token)
                         if "text" in example and not example["text"].endswith(eos_token):  # language modeling case
                             example["text"] = example["text"] + eos_token
                         elif "completion" in example and not example["completion"].endswith(eos_token):
                             example["completion"] = example["completion"] + eos_token
+                            print('Warning!!! .... Adding EOS to completion')
                         return example
 
                     eos_token = processing_class.tokenizer.eos_token if self._is_vlm else processing_class.eos_token
