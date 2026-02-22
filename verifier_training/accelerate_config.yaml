@@ -1,0 +1,54 @@
+# =============================================================================
+# accelerate_config.yaml
+# Multi-GPU training config for accelerate launch.
+#
+# Generate your own interactively with: accelerate config
+# Or use this as a starting point and edit num_processes.
+# =============================================================================
+
+compute_environment: LOCAL_MACHINE
+distributed_type: MULTI_GPU              # change to "NO" for single GPU
+
+# Number of GPUs to use — set to 1 for single GPU
+num_processes: 4                         # ← set to your GPU count
+
+# Mixed precision — matches bf16: true in training config
+mixed_precision: "bf16"
+
+# DeepSpeed — uncomment the block below to enable ZeRO (recommended for 8B+)
+# deepspeed_config:
+#   deepspeed_multinode_launcher: standard
+#   zero_optimization:
+#     stage: 2                           # stage 2: optimizer+gradient sharding
+#     overlap_comm: true
+#     contiguous_gradients: true
+#     reduce_scatter: true
+#     allgather_bucketsize: 2e8
+#     reduce_bucket_size: 2e8
+#   gradient_accumulation_steps: 8      # must match training config
+#   gradient_clipping: 1.0
+#   train_batch_size: auto
+#   train_micro_batch_size_per_gpu: auto
+#   fp16:
+#     enabled: false
+#   bf16:
+#     enabled: true
+
+# FSDP — alternative to DeepSpeed, uncomment to use instead
+# fsdp_config:
+#   fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+#   fsdp_backward_prefetch_policy: BACKWARD_PRE
+#   fsdp_cpu_ram_efficient_loading: true
+#   fsdp_forward_prefetch: false
+#   fsdp_offload_params: false
+#   fsdp_sharding_strategy: FULL_SHARD   # ZeRO-3 equivalent
+#   fsdp_state_dict_type: SHARDED_STATE_DICT
+#   fsdp_sync_module_states: true
+#   fsdp_use_orig_params: true
+
+machine_rank: 0
+main_training_function: main
+num_machines: 1
+rdzv_backend: static
+same_network: true
+use_cpu: false

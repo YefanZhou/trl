@@ -1,0 +1,86 @@
+
+dataset_path: "/data/yefan/checkpoint/llm-verify-mech/train/fine-tuning/processbench_none_train_v1_train.jsonl"   # ← your local JSONL file
+output_dir: "/data/yefan/checkpoint/llm-verify-mech/fine-tuning/qwen3-8b-sft-lora/processbench_none_train_v1"
+report_to: "wandb"                          # "wandb" or "tensorboard" if desired
+run_name: "qwen3-8b-sft-lora-processbench_none_train_v1"
+num_train_epochs: 3
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8 
+
+
+# =============================================================================
+# config_sft.yaml — SFT + LoRA config for Qwen3-8B
+# Usage: python sft_qwen3_lora.py --config config_sft.yaml
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SFTScriptArguments
+# -----------------------------------------------------------------------------
+
+enable_thinking: false                       # true if assistant turns have <think> blocks
+merge_adapter: true                          # merge LoRA into base model after training for vLLM
+
+# -----------------------------------------------------------------------------
+# ModelConfig — model + LoRA
+# -----------------------------------------------------------------------------
+model_name_or_path: "Qwen/Qwen3-8B"
+model_revision: "main"
+dtype: "bfloat16"
+attn_implementation: "flash_attention_2"     # remove if flash-attn not installed
+
+# LoRA
+use_peft: true
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+lora_task_type: "CAUSAL_LM"
+
+# QLoRA — uncomment for 4-bit (single 24GB GPU)
+# load_in_4bit: true
+# bnb_4bit_quant_type: "nf4"
+# bnb_4bit_compute_dtype: "bfloat16"
+# bnb_4bit_use_double_quant: true
+
+# -----------------------------------------------------------------------------
+# SFTConfig — training hyperparameters
+# -----------------------------------------------------------------------------
+
+optim: "adamw_torch"                  # "adamw_torch" if not using bitsandbytes
+learning_rate: 2.0e-4
+lr_scheduler_type: "cosine"
+warmup_ratio: 0.05
+weight_decay: 0.01
+max_grad_norm: 1.0
+
+bf16: true
+fp16: false
+
+max_seq_length: 8192
+packing: false                             # must be false when using prompt+completion columns
+
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+
+# No eval
+eval_strategy: "no"
+
+# Logging & saving
+logging_steps: 10
+save_strategy: "epoch"
+save_total_limit: 3
+
+seed: 42
+data_seed: 42
+
+
+
+push_to_hub: false
